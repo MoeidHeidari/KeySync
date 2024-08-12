@@ -1,0 +1,6 @@
+com/keysync/keysync/ClientGUI.class
+com/keysync/keysync/EventReceiver.class
+com/keysync/keysync/config/AooConfig.class
+com/keysync/keysync/SerializableEvent.class
+com/keysync/keysync/KeysyncApplication.class
+com/keysync/keysync/ClientServer.class

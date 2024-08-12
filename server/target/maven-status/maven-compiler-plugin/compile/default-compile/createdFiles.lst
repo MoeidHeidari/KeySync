@@ -1,0 +1,6 @@
+com/keysync/keysync/Server.class
+com/keysync/keysync/EventTestGUI.class
+com/keysync/keysync/config/AooConfig.class
+com/keysync/keysync/KeysyncApplication.class
+com/keysync/keysync/ServerGUI.class
+com/keysync/keysync/Worker.class
