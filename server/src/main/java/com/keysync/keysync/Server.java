@@ -22,7 +22,6 @@ public class Server {
         this.logArea = logArea;
         this.clientSockets = new ArrayList<>();
     }
-    
 
     public void start() {
         try {
