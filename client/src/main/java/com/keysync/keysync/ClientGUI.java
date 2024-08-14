@@ -1,12 +1,8 @@
 package com.keysync.keysync;
 
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,7 +16,6 @@ public class ClientGUI extends JFrame {
     private JTextField serverPortField;
     private JButton connectButton;
     private JTextArea logArea;
-    private Robot robot;
 
     public ClientGUI() {
         setTitle("Client Application");
@@ -50,12 +45,6 @@ public class ClientGUI extends JFrame {
         connectButton.addActionListener(e -> connectToServer());
 
         setVisible(true);
-
-        try {
-            robot = new Robot();
-        } catch (Exception e) {
-            logArea.append("Error initializing Robot: " + e.getMessage() + "\n");
-        }
     }
 
     private void connectToServer() {
@@ -64,81 +53,34 @@ public class ClientGUI extends JFrame {
 
         try {
             Socket socket = new Socket(serverIp, serverPort);
-            logArea.append("Connected to server at " + serverIp + ":" + serverPort + "\n");
+            updateLog("Connected to server at " + serverIp + ":" + serverPort + "\n");
 
-            // Start a thread to listen for events from the server
-            new Thread(() -> listenForEvents(socket)).start();
+            // Start a thread to listen for logs from the server
+            new Thread(() -> listenForLogs(socket)).start();
 
         } catch (Exception e) {
-            logArea.append("Error: " + e.getMessage() + "\n");
+            updateLog("Error: " + e.getMessage() + "\n");
         }
     }
 
-    private void listenForEvents(Socket socket) {
+    private void listenForLogs(Socket socket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
-                logArea.append("Received: " + line + "\n");
-                processEvent(line);
+                updateLog(line);
             }
         } catch (Exception e) {
-            logArea.append("Connection lost: " + e.getMessage() + "\n");
+            updateLog("Connection lost: " + e.getMessage() + "\n");
         }
     }
 
-    private void processEvent(String eventMessage) {
-        try {
-            if (eventMessage.startsWith("KeyEvent:")) {
-                // Example format: "KeyEvent: 65"
-                String[] parts = eventMessage.split(":");
-                if (parts.length >= 2) {
-                    int keyCode = Integer.parseInt(parts[1].trim());
-                    
-                    if (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_Z) {
-                        robot.keyPress(keyCode);
-                        robot.keyRelease(keyCode);
-                    } else {
-                        logArea.append("Invalid KeyEvent code: " + keyCode + "\n");
-                    }
-                } else {
-                    logArea.append("Invalid KeyEvent format: " + eventMessage + "\n");
-                }
-            } else if (eventMessage.startsWith("MouseEvent:")) {
-                // Example format: "MouseEvent: 1 at (100, 200)"
-                String[] parts = eventMessage.split(" ");
-                if (parts.length >= 4) {
-                    int button = Integer.parseInt(parts[1].trim());
-                    
-                    String[] coords = parts[3].substring(1, parts[3].length() - 1).split(",");
-                    if (coords.length == 2) {
-                        int x = Integer.parseInt(coords[0].trim());
-                        int y = Integer.parseInt(coords[1].trim());
-    
-                        robot.mouseMove(x, y);
-                        
-                        if (button == 1) {
-                            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-                            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-                        } else if (button == 2) {
-                            robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
-                            robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
-                        } else if (button == 3) {
-                            robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
-                            robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
-                        } else {
-                            logArea.append("Unknown mouse button: " + button + "\n");
-                        }
-                    } else {
-                        logArea.append("Invalid MouseEvent coordinates: " + eventMessage + "\n");
-                    }
-                } else {
-                    logArea.append("Invalid MouseEvent format: " + eventMessage + "\n");
-                }
-            } else {
-                logArea.append("Unknown event type: " + eventMessage + "\n");
-            }
-        } catch (Exception e) {
-            logArea.append("Error processing event: " + e.getMessage() + "\n");
-        }
+    // Method to update the log area
+    public void updateLog(String message) {
+        logArea.append(message);
+    }
+
+    public static void main(String[] args) {
+        new ClientGUI();
+        new Client(new ClientGUI(), 8080).start();
     }
 }
